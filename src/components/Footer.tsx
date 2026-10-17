@@ -1,5 +1,6 @@
 import React from 'react';
 import { Database, Shield, Heart, ArrowUp } from 'lucide-react';
+import { LuxuryMarketInsightsNewsletter } from './LuxuryMarketInsightsNewsletter';
 
 interface FooterProps {
   currentLang: 'en' | 'ar';
@@ -22,6 +23,9 @@ export const Footer: React.FC<FooterProps> = ({
     <footer className="w-full bg-[#181614] text-[#FBF9F5] border-t border-[#332F2B] pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-6 space-y-12">
         
+        {/* Luxury Market Insights Newsletter Component */}
+        <LuxuryMarketInsightsNewsletter currentLang={currentLang} />
+
         {/* Top Grid: Brand & Global Enclaves */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-[#2E2A26]">
           

@@ -423,5 +423,162 @@ GO`
   },
   "AllowedHosts": "*"
 }`
+  },
+  {
+    id: 'price-alerts-controller',
+    title: 'ASP.NET Core Web API - PriceAlertsController',
+    filename: 'Controllers/PriceAlertsController.cs',
+    language: 'csharp',
+    category: 'Controller',
+    description: 'Handles price drop alert subscriptions, threshold validation, and alert cancellation.',
+    descriptionAr: 'كونترولر معالجة تنبيهات هبوط الأسعار، التحقق من حدود الأسعار، وإدارة التنبيهات النشطة.',
+    code: `using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Sienna.RealEstate.Data;
+using Sienna.RealEstate.DTOs;
+using Sienna.RealEstate.Models;
+
+namespace Sienna.RealEstate.Controllers
+{
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    [Produces("application/json")]
+    public class PriceAlertsController : ControllerBase
+    {
+        private readonly SiennaDbContext _context;
+        private readonly ILogger<PriceAlertsController> _logger;
+
+        public PriceAlertsController(SiennaDbContext context, ILogger<PriceAlertsController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PriceAlertDto>> CreatePriceAlert([FromBody] CreatePriceAlertRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var property = await _context.Properties.FindAsync(request.PropertyId);
+            if (property == null)
+                return NotFound($"Property with ID '{request.PropertyId}' not found.");
+
+            if (request.ThresholdPriceUSD >= property.PriceUSD)
+                return BadRequest("Threshold price must be strictly lower than the current listing price.");
+
+            var alert = new PriceAlert
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                PropertyId = request.PropertyId,
+                Email = request.Email.Trim().ToLowerInvariant(),
+                Phone = request.Phone,
+                CurrentPriceUSD = property.PriceUSD,
+                ThresholdPriceUSD = request.ThresholdPriceUSD,
+                PercentageDrop = Math.Round(((property.PriceUSD - request.ThresholdPriceUSD) / property.PriceUSD) * 100, 2),
+                Status = "Monitoring",
+                CreatedAt = DateTime.UtcNow,
+                LastEvaluatedAt = DateTime.UtcNow
+            };
+
+            _context.PriceAlerts.Add(alert);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Activated price sentinel for {Email} on {PropertyId} at \${Threshold}", 
+                alert.Email, alert.PropertyId, alert.ThresholdPriceUSD);
+
+            return CreatedAtAction(nameof(GetAlerts), new { id = alert.Id }, alert);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PriceAlert>>> GetAlerts([FromQuery] string? email)
+        {
+            var query = _context.PriceAlerts.AsNoTracking();
+            if (!string.IsNullOrEmpty(email))
+                query = query.Where(a => a.Email == email.ToLowerInvariant());
+
+            return Ok(await query.ToListAsync());
+        }
+    }
+}`
+  },
+  {
+    id: 'price-alert-worker',
+    title: 'ASP.NET Core BackgroundService - PriceAlertWorker',
+    filename: 'Services/PriceAlertMonitoringWorker.cs',
+    language: 'csharp',
+    category: 'Controller',
+    description: 'Background worker running PeriodicTimer to evaluate market valuation dips and dispatch automated SMTP emails.',
+    descriptionAr: 'خدمة خلفية دورية ترصد تغيرات الأسعار في قاعدة البيانات وترسل تنبيهات البريد الإلكتروني الفورية.',
+    code: `using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Sienna.RealEstate.Data;
+using Sienna.RealEstate.Services;
+
+namespace Sienna.RealEstate.Workers
+{
+    public class PriceAlertMonitoringWorker : BackgroundService
+    {
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IEmailNotificationService _emailService;
+        private readonly ILogger<PriceAlertMonitoringWorker> _logger;
+        private readonly PeriodicTimer _timer = new(TimeSpan.FromMinutes(15));
+
+        public PriceAlertMonitoringWorker(
+            IServiceScopeFactory scopeFactory,
+            IEmailNotificationService emailService,
+            ILogger<PriceAlertMonitoringWorker> logger)
+        {
+            _scopeFactory = scopeFactory;
+            _emailService = emailService;
+            _logger = logger;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation("SIENNA Price Sentinel Monitoring Worker started.");
+
+            while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<SiennaDbContext>();
+
+                    var pendingAlerts = await db.PriceAlerts
+                        .Include(a => a.Property)
+                        .Where(a => a.Status == "Monitoring")
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var alert in pendingAlerts)
+                    {
+                        if (alert.Property.PriceUSD <= alert.ThresholdPriceUSD)
+                        {
+                            await _emailService.SendPriceDropNotificationAsync(
+                                toEmail: alert.Email,
+                                propertyTitle: alert.Property.Title,
+                                newPrice: alert.Property.PriceUSD,
+                                originalPrice: alert.CurrentPriceUSD,
+                                threshold: alert.ThresholdPriceUSD
+                            );
+
+                            alert.Status = "Triggered";
+                            alert.TriggeredAt = DateTime.UtcNow;
+                            alert.NotificationsSent += 1;
+                        }
+                        alert.LastEvaluatedAt = DateTime.UtcNow;
+                    }
+
+                    await db.SaveChangesAsync(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred during price monitoring evaluation cycle.");
+                }
+            }
+        }
+    }
+}`
   }
 ];

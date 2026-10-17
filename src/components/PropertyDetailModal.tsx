@@ -4,10 +4,12 @@ import { formatPrice } from '../utils/formatters';
 import { 
   X, MapPin, Bed, Bath, Maximize, Calendar, ShieldCheck, 
   Phone, Mail, CheckCircle2, ChevronRight, Compass, Layers, 
-  ExternalLink, Share2, Heart, Sparkles, Building2, MessageCircle, Navigation
+  ExternalLink, Share2, Heart, Sparkles, Building2, MessageCircle, Navigation,
+  FileDown, Loader2
 } from 'lucide-react';
 import { PropertyPriceTrendChart } from './PropertyPriceTrendChart';
 import { NeighborhoodHighlights } from './NeighborhoodHighlights';
+import { generatePropertyBrochurePDF } from '../utils/generateBrochurePDF';
 
 interface PropertyDetailModalProps {
   property: Property | null;
@@ -49,6 +51,24 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
     : `Hello, I am interested in inquiring about "${property.title}" listed in Sienna Real Estate.`;
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(prePopulatedMessage)}`;
 
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleDownloadBrochure = async () => {
+    if (!property || isGeneratingPDF) return;
+    try {
+      setIsGeneratingPDF(true);
+      await generatePropertyBrochurePDF({
+        property,
+        currency,
+        currentLang
+      });
+    } catch (error) {
+      console.error('Failed to generate brochure PDF:', error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inquiryName || !inquiryEmail) return;
@@ -80,6 +100,24 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadBrochure}
+              disabled={isGeneratingPDF}
+              className="px-3 py-1.5 rounded-lg border border-[#E5E0D8] hover:border-[#C28E5C] hover:bg-[#F2EFE9] text-[#5A534B] hover:text-[#8B5E3C] transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-medium"
+              title={isAr ? 'تحميل الكتيب والملف المعماري للعقار بصيغة PDF' : 'Download formatted architectural PDF brochure'}
+            >
+              {isGeneratingPDF ? (
+                <Loader2 className="w-4 h-4 animate-spin text-[#C28E5C]" />
+              ) : (
+                <FileDown className="w-4 h-4 text-[#8B5E3C]" />
+              )}
+              <span className="hidden sm:inline">
+                {isGeneratingPDF
+                  ? (isAr ? 'جاري التجهيز...' : 'Generating...')
+                  : (isAr ? 'تحميل البروشور (PDF)' : 'Download Brochure')}
+              </span>
+            </button>
+
             <button
               onClick={() => onToggleWishlist(property.id)}
               className="p-2 rounded-lg border border-[#E5E0D8] hover:border-[#C28E5C] text-[#5A534B] hover:text-[#C28E5C] transition-colors cursor-pointer"
@@ -200,6 +238,25 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                   <Phone className="w-4 h-4 text-[#C28E5C]" />
                   <span>{isAr ? 'اتصال بالمستشار الخاص' : 'Call Lead Advisor'}</span>
                 </a>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadBrochure}
+                  disabled={isGeneratingPDF}
+                  className="w-full py-2.5 bg-[#FBF9F5] hover:bg-[#F2EFE9] border border-[#C28E5C] text-[#8B5E3C] hover:text-[#5c3e27] text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-60"
+                  title={isAr ? 'تحميل كتيب العقار بصيغة PDF عالية الدقة' : 'Download high-resolution PDF property brochure'}
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-[#C28E5C]" />
+                  ) : (
+                    <FileDown className="w-4 h-4 text-[#8B5E3C]" />
+                  )}
+                  <span>
+                    {isGeneratingPDF
+                      ? (isAr ? 'جاري تجهيز الكتيب (PDF)...' : 'Compiling Dossier PDF...')
+                      : (isAr ? 'تحميل كتيب العقار الرسمي (PDF)' : 'Download Property Brochure (PDF)')}
+                  </span>
+                </button>
               </div>
             </div>
           </div>
@@ -404,7 +461,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                 <p><strong>{isAr ? 'البريد المباشر:' : 'Direct Mail:'}</strong> {property.agent.email}</p>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap items-center gap-2">
                 <a
                   href={whatsappUrl}
                   target="_blank"
@@ -414,6 +471,21 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                   <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
                   <span>{isAr ? `محادثة واتساب: ${property.agent.nameAr || property.agent.name}` : `WhatsApp ${property.agent.name}`}</span>
                 </a>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadBrochure}
+                  disabled={isGeneratingPDF}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-white hover:bg-[#F2EFE9] border border-[#E5E0D8] hover:border-[#C28E5C] text-[#1E1B18] rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60"
+                  title={isAr ? 'تحميل كتيب العقار بصيغة PDF' : 'Download Brochure PDF'}
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C28E5C]" />
+                  ) : (
+                    <FileDown className="w-3.5 h-3.5 text-[#8B5E3C]" />
+                  )}
+                  <span>{isAr ? 'تحميل الكتيب (PDF)' : 'Dossier (PDF)'}</span>
+                </button>
               </div>
             </div>
 

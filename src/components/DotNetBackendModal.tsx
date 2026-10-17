@@ -45,8 +45,22 @@ export const DotNetBackendModal: React.FC<DotNetBackendModalProps> = ({
     document.body.removeChild(element);
   };
 
-  const executeLiveApiTest = () => {
+  const executeLiveApiTest = async () => {
     setIsLoadingApi(true);
+    try {
+      if (apiEndpoint.startsWith('/api/v1/price-alerts')) {
+        const res = await fetch(apiEndpoint);
+        if (res.ok) {
+          const data = await res.json();
+          setApiResponse(JSON.stringify(data, null, 2));
+          setIsLoadingApi(false);
+          return;
+        }
+      }
+    } catch {
+      // Fallback to simulated response
+    }
+
     setTimeout(() => {
       // Simulate real ASP.NET Core response
       let resultData: any = properties;
@@ -243,6 +257,15 @@ export const DotNetBackendModal: React.FC<DotNetBackendModalProps> = ({
                   className="px-2.5 py-1 bg-[#2A2622] hover:bg-[#38332E] text-[#D6CEBE] rounded cursor-pointer"
                 >
                   Category: Penthouses
+                </button>
+                <button
+                  onClick={() => {
+                    setApiEndpoint('/api/v1/price-alerts');
+                    executeLiveApiTest();
+                  }}
+                  className="px-2.5 py-1 bg-[#8B5E3C]/30 border border-[#8B5E3C] hover:bg-[#8B5E3C]/50 text-amber-200 rounded cursor-pointer"
+                >
+                  Price Alerts API
                 </button>
               </div>
 
