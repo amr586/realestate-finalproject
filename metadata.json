@@ -1,0 +1,8 @@
+{
+  "name": "SIENNA | Luxury Real Estate & Architectural Residences",
+  "description": "Boutique luxury real estate application inspired by the Sienna template, featuring architectural residences, private viewing scheduling, mortgage calculator, and .NET Web API & MS SQL Server backend suite.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
