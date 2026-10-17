@@ -14,6 +14,7 @@ import { ThreePropertyViewer } from './components/ThreePropertyViewer';
 import { MortgageCalculator } from './components/MortgageCalculator';
 import { ArchitecturePhilosophy } from './components/ArchitecturePhilosophy';
 import { UserAgentDashboardModal } from './components/UserAgentDashboardModal';
+import { OperationsDashboardModal } from './components/OperationsDashboardModal';
 import { AdvancedSearchModal } from './components/AdvancedSearchModal';
 import { ScheduleViewingModal } from './components/ScheduleViewingModal';
 import { WishlistDrawer } from './components/WishlistDrawer';
@@ -373,7 +374,7 @@ function RealEstateApp() {
 
       {/* MODAL 4: User & Agent Management Portal */}
       {isDashboardOpen && (
-        <UserAgentDashboardModal
+        <OperationsDashboardModal
           currentLang={currentLang}
           currency={currency}
           onClose={() => setIsDashboardOpen(false)}
