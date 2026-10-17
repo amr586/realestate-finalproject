@@ -20,6 +20,7 @@ import { WishlistDrawer } from './components/WishlistDrawer';
 import { DotNetBackendModal } from './components/DotNetBackendModal';
 import { AIAssistantDrawer } from './components/AIAssistantDrawer';
 import { Footer } from './components/Footer';
+import { AuthModal } from './components/AuthModal';
 import { 
   Property, CurrencyCode, PropertyCategory, ListingType, SearchFilterState 
 } from './types';
@@ -66,6 +67,7 @@ function RealEstateApp() {
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const comparisonProperties = properties.filter((property) => comparisonIds.includes(property.id));
   const toggleComparison = (property: Property) => {
@@ -215,6 +217,7 @@ function RealEstateApp() {
         wishlistCount={wishlistIds.length}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenScheduleViewing={() => handleOpenScheduleViewing()}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       {/* Hero Section */}
@@ -307,6 +310,8 @@ function RealEstateApp() {
         currentLang={currentLang}
         onOpenPortal={() => setIsDashboardOpen(true)}
       />
+
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
       {/* MODAL 1: Detailed Property View Modal */}
       {selectedProperty && (

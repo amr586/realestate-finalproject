@@ -10,6 +10,7 @@ interface HeaderProps {
   wishlistCount: number;
   onOpenWishlist: () => void;
   onOpenScheduleViewing: () => void;
+  onOpenAuth: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,7 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectCurrency,
   wishlistCount,
   onOpenWishlist,
-  onOpenScheduleViewing
+  onOpenScheduleViewing,
+  onOpenAuth
 }) => {
   const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   const isAr = currentLang === 'ar';
@@ -121,6 +123,13 @@ export const Header: React.FC<HeaderProps> = ({
                 {wishlistCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={onOpenAuth}
+            className="hidden sm:block px-4 py-2.5 text-xs font-semibold text-[#8B5E3C] border border-[#D8B48F] rounded transition-colors hover:bg-[#F2EFE9] whitespace-nowrap cursor-pointer"
+          >
+            {isAr ? 'دخول / تسجيل' : 'Login / Register'}
           </button>
 
           {/* Primary Action Button */}

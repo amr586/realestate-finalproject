@@ -15,8 +15,8 @@ export default defineConfig(() => {
           order: 'post',
           handler(html) {
             return html
-              .replace(/\s*<script type="module" src="\/@vite\/client"><\/script>/g, '')
-              .replace(/\s*<script type="module">import \{ injectIntoGlobalHook \} from "\/@react-refresh";[\s\S]*?<\/script>/g, '')
+              .replace(/\s*<script[^>]+src=["']\/@vite\/client["'][^>]*><\/script>/g, '')
+              .replace(/\s*<script[^>]*>[\s\S]*?\/@react-refresh[\s\S]*?<\/script>/g, '')
           },
         },
       },
