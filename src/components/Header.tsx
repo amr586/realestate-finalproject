@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Globe, Database, BookmarkCheck, PhoneCall } from 'lucide-react';
+import { Heart, Globe, BookmarkCheck, PhoneCall } from 'lucide-react';
 import { CurrencyCode } from '../types';
 
 interface HeaderProps {
@@ -65,13 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {isAr ? 'المستشارون' : 'Advisors'}
           </a>
-          <button 
-            onClick={onOpenDotNetBackend}
-            className="flex items-center gap-1.5 text-[#8B5E3C] hover:text-[#1E1B18] font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            <Database className="w-3.5 h-3.5" />
-            <span>{isAr ? 'بنية .NET & SQL' : '.NET 9 API'}</span>
-          </button>
+
         </nav>
 
         {/* Zone 3: Primary Actions & Utilities */}
