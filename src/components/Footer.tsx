@@ -4,13 +4,11 @@ import { LuxuryMarketInsightsNewsletter } from './LuxuryMarketInsightsNewsletter
 
 interface FooterProps {
   currentLang: 'en' | 'ar';
-  onOpenDotNetBackend: () => void;
   onOpenPortal: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   currentLang,
-  onOpenDotNetBackend,
   onOpenPortal
 }) => {
   const isAr = currentLang === 'ar';
@@ -40,14 +38,6 @@ export const Footer: React.FC<FooterProps> = ({
                 : 'Boutique architectural estate brokerage representing museum-grade residences and confidential acquisitions across prime global territories.'}
             </p>
             <div className="pt-2 flex items-center gap-3">
-              <button
-                onClick={onOpenDotNetBackend}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2A2622] hover:bg-[#8B5E3C] text-[#D6CEBE] hover:text-white rounded text-xs font-mono transition-colors cursor-pointer"
-              >
-                <Database className="w-3.5 h-3.5" />
-                <span>ASP.NET Core 9 & SQL Server</span>
-              </button>
-
               <button
                 onClick={onOpenPortal}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2A2622] hover:bg-[#8B5E3C] text-[#D6CEBE] hover:text-white rounded text-xs transition-colors cursor-pointer"

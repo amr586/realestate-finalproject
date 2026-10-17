@@ -192,7 +192,7 @@ function RealEstateApp() {
               className="text-[#D8B48F] hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
             >
               <Shield className="w-3.5 h-3.5" />
-              <span>{isAr ? `لوحة الإدارة (${userRole === 'agent' ? 'وسيط' : 'عميل'})` : `Portal (${userRole})`}</span>
+              <span>{isAr ? `لوحة الإدارة (${userRole === 'agent' ? '��سيط' : 'عميل'})` : `Portal (${userRole})`}</span>
             </button>
 
             <button
@@ -215,7 +215,6 @@ function RealEstateApp() {
         wishlistCount={wishlistIds.length}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenScheduleViewing={() => handleOpenScheduleViewing()}
-        onOpenDotNetBackend={() => setIsDotNetBackendOpen(true)}
       />
 
       {/* Hero Section */}
@@ -306,7 +305,6 @@ function RealEstateApp() {
       {/* Footer */}
       <Footer
         currentLang={currentLang}
-        onOpenDotNetBackend={() => setIsDotNetBackendOpen(true)}
         onOpenPortal={() => setIsDashboardOpen(true)}
       />
 

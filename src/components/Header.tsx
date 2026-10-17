@@ -10,7 +10,6 @@ interface HeaderProps {
   wishlistCount: number;
   onOpenWishlist: () => void;
   onOpenScheduleViewing: () => void;
-  onOpenDotNetBackend: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,8 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectCurrency,
   wishlistCount,
   onOpenWishlist,
-  onOpenScheduleViewing,
-  onOpenDotNetBackend
+  onOpenScheduleViewing
 }) => {
   const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   const isAr = currentLang === 'ar';
