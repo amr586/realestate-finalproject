@@ -12,6 +12,9 @@ interface PropertyCatalogProps {
   onToggleWishlist: (id: string) => void;
   onSelectProperty: (property: Property) => void;
   onScheduleViewing: (property: Property) => void;
+  comparisonIds: string[];
+  onToggleComparison: (property: Property) => void;
+  onOpenComparison: () => void;
   initialCategory?: PropertyCategory;
 }
 
@@ -23,6 +26,9 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
   onToggleWishlist,
   onSelectProperty,
   onScheduleViewing,
+  comparisonIds,
+  onToggleComparison,
+  onOpenComparison,
   initialCategory = 'all'
 }) => {
   const isAr = currentLang === 'ar';
@@ -112,6 +118,19 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
           </div>
         </div>
 
+        {comparisonIds.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#D8B48F] bg-[#1E1B18] px-4 py-3 text-[#FBF9F5] shadow-lg">
+            <div className="flex items-center gap-3 text-xs">
+              <span className="font-semibold text-[#D8B48F]">{comparisonIds.length}/3</span>
+              <span>{isAr ? 'عقارات محددة للمقارنة' : 'residences selected for comparison'}</span>
+              {comparisonIds.length === 3 && <span className="text-[#A8A196]">{isAr ? 'الحد الأقصى' : 'Maximum reached'}</span>}
+            </div>
+            <button onClick={onOpenComparison} className="rounded-lg bg-[#D8B48F] px-4 py-2 text-xs font-semibold text-[#1E1B18] transition-colors hover:bg-white cursor-pointer">
+              {isAr ? 'فتح المقارنة' : 'Open comparison'}
+            </button>
+          </div>
+        )}
+
         {/* Filter Tabs / Segmented Controls */}
         <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
           {/* Typology tabs */}
@@ -171,6 +190,15 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
 
                     {/* Gradient Scrim for subtle contrast */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggleComparison(prop); }}
+                      disabled={!comparisonIds.includes(prop.id) && comparisonIds.length >= 3}
+                      className={`absolute top-3.5 left-3.5 z-10 rounded-full px-2.5 py-1.5 text-[10px] font-semibold shadow-sm transition-colors cursor-pointer ${comparisonIds.includes(prop.id) ? 'bg-[#D8B48F] text-[#1E1B18]' : 'bg-white/90 text-[#1E1B18] hover:bg-white'} disabled:cursor-not-allowed disabled:opacity-50`}
+                      title={comparisonIds.includes(prop.id) ? 'Remove from comparison' : 'Compare property'}
+                    >
+                      {comparisonIds.includes(prop.id) ? 'Selected' : 'Compare'}
+                    </button>
 
                     {/* Wishlist Button */}
                     <button

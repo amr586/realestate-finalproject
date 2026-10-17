@@ -9,6 +9,7 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { PropertyCatalog } from './components/PropertyCatalog';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
+import { PropertyComparisonModal } from './components/PropertyComparisonModal';
 import { ThreePropertyViewer } from './components/ThreePropertyViewer';
 import { MortgageCalculator } from './components/MortgageCalculator';
 import { ArchitecturePhilosophy } from './components/ArchitecturePhilosophy';
@@ -28,7 +29,7 @@ import {
 } from 'lucide-react';
 
 function RealEstateApp() {
-  const { properties, userRole } = useAuth();
+  const { properties, userRole, currentUser } = useAuth();
 
   // Language & Localization State
   const [currentLang, setCurrentLang] = useState<'ar' | 'en'>('ar');
@@ -63,6 +64,15 @@ function RealEstateApp() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isDotNetBackendOpen, setIsDotNetBackendOpen] = useState(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [comparisonIds, setComparisonIds] = useState<string[]>([]);
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+
+  const comparisonProperties = properties.filter((property) => comparisonIds.includes(property.id));
+  const toggleComparison = (property: Property) => {
+    setComparisonIds((current) => current.includes(property.id)
+      ? current.filter((id) => id !== property.id)
+      : current.length < 3 ? [...current, property.id] : current);
+  };
 
   // Advanced Search Filter State
   const [filters, setFilters] = useState<SearchFilterState>({
@@ -270,6 +280,9 @@ function RealEstateApp() {
         onToggleWishlist={toggleWishlist}
         onSelectProperty={setSelectedProperty}
         onScheduleViewing={handleOpenScheduleViewing}
+        comparisonIds={comparisonIds}
+        onToggleComparison={toggleComparison}
+        onOpenComparison={() => setIsComparisonOpen(true)}
         initialCategory={filters.category}
       />
 
@@ -307,6 +320,22 @@ function RealEstateApp() {
           onScheduleViewing={handleOpenScheduleViewing}
           isWishlisted={wishlistIds.includes(selectedProperty.id)}
           onToggleWishlist={toggleWishlist}
+          currentUserEmail={currentUser?.email || ''}
+        />
+      )}
+
+      {isComparisonOpen && (
+        <PropertyComparisonModal
+          properties={comparisonProperties}
+          allProperties={properties}
+          currency={currency}
+          currentLang={currentLang}
+          onClose={() => setIsComparisonOpen(false)}
+          onRemoveProperty={(id) => setComparisonIds((current) => current.filter((item) => item !== id))}
+          onAddProperty={toggleComparison}
+          onSelectProperty={(property) => { setIsComparisonOpen(false); setSelectedProperty(property); }}
+          onScheduleViewing={(property) => { setIsComparisonOpen(false); handleOpenScheduleViewing(property); }}
+          onClearAll={() => setComparisonIds([])}
         />
       )}
 

@@ -5,7 +5,7 @@ import {
   X, MapPin, Bed, Bath, Maximize, Calendar, ShieldCheck, 
   Phone, Mail, CheckCircle2, ChevronRight, Compass, Layers, 
   ExternalLink, Share2, Heart, Sparkles, Building2, MessageCircle, Navigation,
-  FileDown, Loader2
+  FileDown, Loader2, Bell
 } from 'lucide-react';
 import { PropertyPriceTrendChart } from './PropertyPriceTrendChart';
 import { NeighborhoodHighlights } from './NeighborhoodHighlights';
@@ -19,6 +19,7 @@ interface PropertyDetailModalProps {
   onScheduleViewing: (property: Property) => void;
   isWishlisted: boolean;
   onToggleWishlist: (id: string) => void;
+  currentUserEmail?: string;
 }
 
 export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
@@ -28,8 +29,9 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   onClose,
   onScheduleViewing,
   isWishlisted,
-  onToggleWishlist
-}) => {
+  onToggleWishlist,
+  currentUserEmail = ''
+  }) => {
   if (!property) return null;
   const isAr = currentLang === 'ar';
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -38,7 +40,25 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   const [inquiryPhone, setInquiryPhone] = useState('');
   const [inquiryMessage, setInquiryMessage] = useState('');
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
+  const [alertThreshold, setAlertThreshold] = useState('');
+  const [alertEmail, setAlertEmail] = useState(currentUserEmail);
+  const [alertStatus, setAlertStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [alertMessage, setAlertMessage] = useState('');
 
+  const handlePriceAlert = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAlertStatus('saving');
+    try {
+      const response = await fetch('/api/v1/price-alerts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId: property.id, propertyTitle: property.title, propertyTitleAr: property.titleAr, propertyCoverImage: property.coverImage, propertyLocation: property.location, currentPriceUSD: property.priceUSD, thresholdPriceUSD: Number(alertThreshold), email: alertEmail, currency: 'USD' })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Unable to set alert');
+      setAlertStatus('success'); setAlertMessage(isAr ? data.messageAr : data.message);
+    } catch (error) { setAlertStatus('error'); setAlertMessage(error instanceof Error ? error.message : 'Unable to set alert'); }
+  };
+  
   // Fallback image array guarantee
   const allImages = property.galleryImages?.length > 0 
     ? property.galleryImages 
@@ -433,8 +453,24 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             propertyTitle={isAr ? property.titleAr : property.title}
           />
 
-          {/* Dedicated Advisor & Inquiry Box */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-[#FBF9F5] rounded-xl border border-[#E5E0D8]">
+      <form onSubmit={handlePriceAlert} className="mb-8 rounded-xl border border-[#D8B48F] bg-[#1E1B18] p-5 text-[#FBF9F5]">
+        <div className="flex items-start gap-3">
+          <Bell className="mt-0.5 h-5 w-5 text-[#D8B48F]" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold">{isAr ? 'تنبيه انخفاض السعر' : 'Set a price alert'}</p>
+            <p className="mt-1 text-xs text-[#C8C0B7]">{isAr ? 'سنرسل لك بريداً إلكترونياً عندما ينخفض السعر عن الحد الذي تحدده.' : 'We&apos;ll email you when this residence drops below your target.'}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+              <input required type="number" min="1" max={property.priceUSD - 1} value={alertThreshold} onChange={(e) => setAlertThreshold(e.target.value)} placeholder={isAr ? 'السعر المستهدف بالدولار' : 'Target price (USD)'} className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-xs outline-none placeholder:text-[#A8A196] focus:border-[#D8B48F]" />
+              <input required type="email" value={alertEmail} onChange={(e) => setAlertEmail(e.target.value)} placeholder="Email address" className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-xs outline-none placeholder:text-[#A8A196] focus:border-[#D8B48F]" />
+              <button disabled={alertStatus === 'saving'} className="rounded-lg bg-[#D8B48F] px-4 py-2 text-xs font-semibold text-[#1E1B18] hover:bg-white disabled:opacity-60 cursor-pointer">{alertStatus === 'saving' ? 'Saving…' : isAr ? 'تفعيل التنبيه' : 'Activate alert'}</button>
+            </div>
+            {alertMessage && <p className={`mt-3 text-xs ${alertStatus === 'error' ? 'text-red-300' : 'text-emerald-300'}`}>{alertMessage}</p>}
+          </div>
+        </div>
+      </form>
+
+      {/* Dedicated Advisor & Inquiry Box */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-[#FBF9F5] rounded-xl border border-[#E5E0D8]">
             {/* Advisor profile */}
             <div className="space-y-4">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#8B5E3C]">
