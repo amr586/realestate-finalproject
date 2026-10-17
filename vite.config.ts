@@ -5,7 +5,22 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'disable-hmr-client-in-express-preview',
+        enforce: 'post',
+        transformIndexHtml: {
+          order: 'post',
+          handler(html) {
+            return html
+              .replace(/\s*<script type="module" src="\/@vite\/client"><\/script>/g, '')
+              .replace(/\s*<script type="module">import \{ injectIntoGlobalHook \} from "\/@react-refresh";[\s\S]*?<\/script>/g, '')
+          },
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
