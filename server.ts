@@ -167,7 +167,7 @@ Provide at least 5-7 verified real places. Ensure the JSON is clean and strictly
     res.json({
       success: true,
       summary: `Prestigious enclave offering world-class educational institutions, serene parks, and curated dining in ${city}.`,
-      summaryAr: `حي راقٍ يتميز بمؤسسات تعليمية عالمية، حدائق هادئة، ومطاعم استثنائية في ${city}.`,
+      summaryAr: `حي راق�� يتميز بمؤسسات تعليمية عالمية، حدائق هادئة، ومطاعم استثنائية في ${city}.`,
       highlights: getCuratedEnclaveHighlights(location, city),
       sources: [
         {
@@ -329,7 +329,7 @@ function getCuratedEnclaveHighlights(location: string, city: string) {
     },
     {
       name: 'Regents International Maritime Academy',
-      nameAr: 'أكاديمية ريجنتس الدولية',
+      nameAr: 'أكاديمية ريجنتس ال��ولية',
       category: 'schools',
       distance: '10 min drive',
       distanceAr: '10 دقائق بالسيارة',
@@ -766,15 +766,17 @@ app.delete('/api/v1/price-alerts/:id', (req, res) => {
   res.json({ success: true, message: 'Price alert cancelled.', alert: removed });
 });
 
-// Mount Vite middleware in development
-const vite = await createViteServer({
-  server: { 
-    middlewareMode: true,
-    hmr: process.env.DISABLE_HMR !== 'true',
-    watch: process.env.DISABLE_HMR === 'true' ? null : {}
-  },
-  appType: 'spa',
-});
+  // Mount Vite middleware in development. The Express wrapper does not
+  // forward WebSocket upgrades, so keep Vite HMR disabled to avoid a client
+  // attempting to connect to a socket this server cannot open.
+  const vite = await createViteServer({
+    server: {
+      middlewareMode: true,
+      hmr: false,
+      watch: null,
+    },
+    appType: 'spa',
+  });
 
 app.use(vite.middlewares);
 
