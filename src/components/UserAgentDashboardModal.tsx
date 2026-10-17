@@ -4,8 +4,10 @@ import { Property, CurrencyCode, PropertyCategory, ListingType } from '../types'
 import { formatPrice } from '../utils/formatters';
 import { 
   X, User, Shield, Building, Plus, Trash2, Edit3, MessageSquare, 
-  Calendar, CheckCircle, Clock, Send, LogOut, KeyRound, Sparkles, AlertCircle
+  Calendar, CheckCircle, Clock, Send, LogOut, KeyRound, Sparkles, 
+  AlertCircle, BarChart3, Target
 } from 'lucide-react';
+import { AgentPerformanceAnalytics } from './AgentPerformanceAnalytics';
 
 interface DashboardModalProps {
   currentLang: 'en' | 'ar';
@@ -35,7 +37,7 @@ export const UserAgentDashboardModal: React.FC<DashboardModalProps> = ({
     replyToInquiry 
   } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'add-property' | 'inquiries' | 'bookings' | 'auth'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'add-property' | 'inquiries' | 'bookings' | 'auth'>('overview');
   
   // Registration form state
   const [regName, setRegName] = useState('');
@@ -180,6 +182,20 @@ export const UserAgentDashboardModal: React.FC<DashboardModalProps> = ({
           >
             {isAr ? 'نظرة عامة' : 'Dashboard Overview'}
           </button>
+
+          {isAgent && (
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`py-3 px-3 text-xs font-semibold tracking-wider uppercase border-b-2 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'analytics'
+                  ? 'border-[#C28E5C] text-[#C28E5C]'
+                  : 'border-transparent text-[#736B63] hover:text-[#1E1B18]'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>{isAr ? 'التحليلات وسرعة الإغلاق' : 'Analytics & Velocity'}</span>
+            </button>
+          )}
 
           {isAgent && (
             <button
